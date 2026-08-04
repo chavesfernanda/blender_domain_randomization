@@ -1,3 +1,4 @@
+# Bola de futebol Blender - aprendizado
 import bpy
 import random
 import json
@@ -12,7 +13,7 @@ def limpar_cena():
     bpy.ops.object.delete(use_global=False)
 
 def criar_material_bola_futebol():
-    """Cria um material procedural com o padrão clássico de gomos (pentágonos/hexágonos)."""
+    """Deve criar um material procedural com o padrão clássico de gomos (pentágonos/hexágonos)."""
     mat = bpy.data.materials.new(name="Material_Bola_Futebol")
     mat.use_nodes = True
     nodes = mat.node_tree.nodes
@@ -177,7 +178,8 @@ def executar_pipeline_domain_randomization(num_samples=5, output_dir="./renders"
         print(f"Amostra {i+1}/{num_samples} da bola colorida renderizada com sucesso!")
 
 # Execução do script
+# Determinei o caminho de acordo com minha preferencia, deixei este código com padrão
 executar_pipeline_domain_randomization(
     num_samples=5, 
-    output_dir="/.reads"
+    output_dir="./renders"
 )
