@@ -1,0 +1,16 @@
+{
+    "image": "sample_0000.png",
+    "label": "Soccer_Ball",
+    "bbox_yolo_format": {
+        "x_center": 0.5,
+        "y_center": 0.5,
+        "width": 0.35,
+        "height": 0.35
+    },
+    "light_energy": 529.4271850585938,
+    "camera_location": [
+        -5.804303169250488,
+        -4.0464582443237305,
+        2.315402030944824
+    ]
+}
