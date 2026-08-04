@@ -16,12 +16,12 @@ Este repositório contém uma solução avançada em Python (`bpy`) para geraç�
 ## Exemplo de Anotação Gerada (`.json`)
 ```json
 {
-    "image": "sample_0000.png",
-    "label": "Suzanne_Monkey",
-    "bbox_yolo_format": {
-        "x_center": 0.512,
-        "y_center": 0.489,
-        "width": 0.310,
-        "height": 0.285
+    "image	"sample_0000.png"
+label	"Suzanne_Monkey"
+bbox_yolo_format	
+x_center	0.5
+y_center	0.5
+width	0.35
+height	0.35
     }
 }
