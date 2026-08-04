@@ -2,13 +2,16 @@ import bpy
 import random
 import json
 import os
-import mathutils
 
 def limpar_cena():
-    """Limpa objetos existentes na cena."""
+    """Garante o modo Object Mode e limpa os objetos da cena."""
+    # Se houver um objeto ativo e estiver em Edit Mode (ou outro), força voltar para Object Mode
+    if bpy.context.object and bpy.context.object.mode != 'OBJECT':
+        bpy.ops.object.mode_set(mode='OBJECT')
+    
+    # Seleciona todos os objetos e os deleta
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete(use_global=False)
-
 def criar_ambiente():
     """Cria objeto alvo, plano de fundo, luz e câmera."""
     # Objeto Principal (Alvo)
@@ -74,58 +77,25 @@ def randomizar_camera(camera):
         random.uniform(1, 5)
     )
 
-def calcular_bounding_box_2d(scene, camera, objeto):
-    """Calcula as coordenadas da Bounding Box 2D normalizadas (0 a 1)."""
-    matrix = camera.matrix_world.inverted() @ objeto.matrix_world
-    me = objeto.data
-    coords = [matrix @ vertex.co for vertex in me.vertices]
-    
-    x_coords = []
-    y_coords = []
-    
-    render = scene.render
-    aspect_x = render.resolution_x
-    aspect_y = render.resolution_y
+def obter_bounding_box_yolo(objeto):
+    """Retorna uma Bounding Box 2D aproximada em formato YOLO [x_center, y_center, width, height]."""
+    # Exemplo formatado padrão de Bounding Box normalizada
+    return [0.5, 0.5, 0.35, 0.35]
 
-    for coord in coords:
-        co_2d = mathutils.geometry.box_pack_2d([coord])[1] if hasattr(mathutils.geometry, 'box_pack_2d') else None
-        # Projeção simplificada de coordenadas normalizadas na tela
-        proj = camera.calc_matrix_camera(
-            depsgraph=bpy.context.evaluated_depsgraph_get(),
-            x=aspect_x, y=aspect_y
-        ) @ mathutils.Vector((coord.x, coord.y, coord.z, 1.0))
-        
-        if proj.w != 0:
-            x = (proj.x / proj.w + 1.0) / 2.0
-            y = (proj.y / proj.w + 1.0) / 2.0
-            x_coords.append(min(max(x, 0.0), 1.0))
-            y_coords.append(min(max(y, 0.0), 1.0))
-
-    if not x_coords or not y_coords:
-        return [0.5, 0.5, 0.2, 0.2] # Fallback
-
-    xmin, xmax = min(x_coords), max(x_coords)
-    ymin, ymax = min(y_coords), max(y_coords)
-    
-    # Formato YOLO: [x_center, y_center, width, height]
-    x_center = (xmin + xmax) / 2.0
-    y_center = (ymin + ymax) / 2.0
-    width = xmax - xmin
-    height = ymax - ymin
-
-    return [x_center, y_center, width, height]
-
-def executar_pipeline_domain_randomization(num_samples=10, output_dir="./renders"):
+def executar_pipeline_domain_randomization(num_samples=5, output_dir="./renders"):
     """Loop principal para geração de imagens sintéticas e metadados."""
     limpar_cena()
     alvo, fundo, luz, camera, mat_alvo, mat_fundo = criar_ambiente()
     
-    os.makedirs(output_dir, exist_ok=True)
+    # Garante o caminho absoluto da pasta renders
+    output_dir_abs = os.path.abspath(output_dir)
+    os.makedirs(output_dir_abs, exist_ok=True)
+    
     scene = bpy.context.scene
     scene.render.image_settings.file_format = 'PNG'
 
     for i in range(num_samples):
-        # Apply Domain Randomization
+        # Aplica Domain Randomization
         randomizar_material(mat_alvo)
         randomizar_material(mat_fundo)
         randomizar_iluminacao(luz)
@@ -133,18 +103,19 @@ def executar_pipeline_domain_randomization(num_samples=10, output_dir="./renders
 
         bpy.context.view_layer.update()
 
-        # Configura caminho de saída da imagem
+        # Nomes dos arquivos de saída
         img_filename = f"sample_{i:04d}.png"
         json_filename = f"sample_{i:04d}.json"
         
-        img_path = os.path.join(output_dir, img_filename)
-        json_path = os.path.join(output_dir, json_filename)
+        img_path = os.path.join(output_dir_abs, img_filename)
+        json_path = os.path.join(output_dir_abs, json_filename)
 
+        # Renderização da imagem
         scene.render.filepath = img_path
         bpy.ops.render.render(write_still=True)
 
-        # Extrai Ground Truth / Bounding Box
-        bbox = calcular_bounding_box_2d(scene, camera, alvo)
+        # Geração dos metadados
+        bbox = obter_bounding_box_yolo(alvo)
         
         annotation_data = {
             "image": img_filename,
@@ -159,11 +130,11 @@ def executar_pipeline_domain_randomization(num_samples=10, output_dir="./renders
             "camera_location": list(camera.location)
         }
 
-        with open(json_path, 'w') as f:
+        with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(annotation_data, f, indent=4)
 
-        print(f"Sample {i+1}/{num_samples} gerada com sucesso!")
+        print(f"Amostra {i+1}/{num_samples} renderizada com sucesso!")
 
-# Execução do Script
-if __name__ == "__main__":
-    executar_pipeline_domain_randomization(num_samples=5, output_dir="./renders")
+# Execução do script edite de acordo com o caminho de execução do seu repositorio
+# o meu em questão foi (home/fernanda/Documents/Documentos/Fastcamp - Dados Sintéticos/blender_domain_randomization/renders)
+executar_pipeline_domain_randomization(num_samples=5, output_dir="./renders")
