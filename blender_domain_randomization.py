@@ -158,7 +158,8 @@ def executar_pipeline_domain_randomization(num_samples=5, output_dir="./renders"
         bpy.ops.render.render(write_still=True)
 
         bbox = obter_bounding_box_yolo(alvo)
-        
+
+        #EXEMPLO QUE ADICIONEI NO ARQUIVO README.md
         annotation_data = {
             "image": img_filename,
             "label": "Soccer_Ball",
