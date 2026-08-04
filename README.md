@@ -17,7 +17,7 @@ Este repositório contém uma solução avançada em Python (`bpy`) para geraç�
 ```json
 {
    "image": "sample_0000.png",
-    "label": "Suzanne_Monkey",
+    "label": "Soccer_Ball",
     "bbox_yolo_format": {
         "x_center": 0.5,
         "y_center": 0.5,
